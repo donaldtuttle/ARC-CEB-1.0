@@ -18,10 +18,21 @@ The current release is **locked but not executed**. The packages and preregistra
 | Understand the protocol | [`docs/ARC-CEB-1.0-SPEC.md`](docs/ARC-CEB-1.0-SPEC.md) |
 | Inspect the preregistered test | [`docs/PREREGISTRATION.md`](docs/PREREGISTRATION.md) |
 | Review all 24 expected cases | [`docs/CASE_MATRIX.md`](docs/CASE_MATRIX.md) |
+| Load the agent skill | [`SKILL.md`](SKILL.md) · [`skills/arc-ceb/`](skills/arc-ceb/) |
 | Download the frozen packages | [`v1.0-LOCKED_NOT_EXECUTED`](https://github.com/donaldtuttle/ARC-CEB-1.0/releases/tag/v1.0-LOCKED_NOT_EXECUTED) |
 | Verify the release pins | [`release/HASHES.md`](release/HASHES.md) |
 
 > **Blind-scoring warning:** `docs/CASE_MATRIX.md` contains expected classifications and reference actions. Do not provide it to blind scorers.
+
+## Agent skill
+
+`SKILL.md` is the agent-facing contract for ARC-CEB-1.0. It tells Claude, ChatGPT, Codex, Cursor, Grok, and any [agentskills.io](https://agentskills.io) host to freeze the record, enumerate R1–R8, hash the CandidateSet, and refuse free-form audits.
+
+The portable pack is [`skills/arc-ceb/`](skills/arc-ceb/SKILL.md). Folder name must match the YAML `name` field `arc-ceb`. Canonical weight remains none. The skill does not execute the locked suite and is not `Enum_CEB_1`.
+
+Authority boundary: [`docs/agent-skill.md`](docs/agent-skill.md). Install notes: [`skills/arc-ceb/references/install.md`](skills/arc-ceb/references/install.md).
+
+This is editorial packaging. It does not alter tagged release bytes, `LOCK.json`, or the published ZIP hashes.
 
 ## Why ARC-CEB exists
 
@@ -181,9 +192,12 @@ It would **not** establish that:
 | Path | Purpose |
 |---|---|
 | [`README.md`](README.md) | Plain-language front door, status, downloads, and execution path |
+| [`SKILL.md`](SKILL.md) | Agent skill contract: freeze, enumerate R1–R8, hash |
+| [`skills/arc-ceb/`](skills/arc-ceb/SKILL.md) | Portable agentskills.io pack |
 | [`docs/ARC-CEB-1.0-SPEC.md`](docs/ARC-CEB-1.0-SPEC.md) | Protocol specification and deterministic boundary |
 | [`docs/PREREGISTRATION.md`](docs/PREREGISTRATION.md) | Frozen suite design, gates, and claim boundary |
 | [`docs/CASE_MATRIX.md`](docs/CASE_MATRIX.md) | Expected category, trigger coverage, candidate count, and terminal action for all 24 cases |
+| [`docs/agent-skill.md`](docs/agent-skill.md) | Authority boundary for the agent skill |
 | [`release/HASHES.md`](release/HASHES.md) | SHA-256 pins for the two ZIP packages and `LOCK.json` |
 | [`LICENSE`](LICENSE) | MIT License |
 | [GitHub Release](https://github.com/donaldtuttle/ARC-CEB-1.0/releases/tag/v1.0-LOCKED_NOT_EXECUTED) | Frozen binary packages under tag `v1.0-LOCKED_NOT_EXECUTED` |

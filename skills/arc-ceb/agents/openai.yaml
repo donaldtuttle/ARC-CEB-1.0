@@ -1,0 +1,7 @@
+interface:
+  display_name: "ARC-CEB-1.0"
+  short_description: "Freeze the record. Enumerate R1–R8. Hash the CandidateSet."
+  brand_color: "#1E4A7A"
+  default_prompt: "Use $arc-ceb to freeze the ARC Control Record, enumerate the R1–R8 boundary, hash the CandidateSet, and decide NEXT_PROMPT or CHAIN_COMPLETE. Do not invent defect classes. Do not reread prose to notice issues."
+policy:
+  allow_implicit_invocation: true
