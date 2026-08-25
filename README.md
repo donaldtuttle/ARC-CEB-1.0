@@ -1,155 +1,203 @@
 # ARC-CEB-1.0
 
-**Candidate-Enumeration Boundary and Deterministic Residual-Issue Generator**  
-Conformance Suite: `ARC-CEB-CONF-1.0`
+[![Release v1.0](https://img.shields.io/badge/release-v1.0-2563EB)](https://github.com/donaldtuttle/ARC-CEB-1.0/releases/tag/v1.0-LOCKED_NOT_EXECUTED)
+![Status: locked not executed](https://img.shields.io/badge/status-LOCKED__NOT__EXECUTED-B45309)
+![Conformance suite: 24 cases](https://img.shields.io/badge/conformance-24%20frozen%20cases-0F766E)
+[![License: MIT](https://img.shields.io/badge/license-MIT-6B7280)](LICENSE)
 
-**Status:** `LOCKED_NOT_EXECUTED`  
-**Classification:** Experimental Protocol / Process-Control Extension / QOFT Typed Realization candidate  
-**Canonical weight:** None  
-**Freeze date:** 2026-08-22
+> **Freeze the record. Enumerate the boundary. Hash the result.**
 
----
+ARC-CEB-1.0 is a deterministic conformance protocol for deciding whether an ARC-controlled answer contains a residual issue that justifies one more prompt. Instead of asking a model to reread prose and freely notice possible defects, it enumerates a closed R1-R8 defect boundary from a frozen typed record, hashes the resulting candidate set, and then gives independent scorers a fixed object to evaluate.
 
-## What this is
+The current release is **locked but not executed**. The packages and preregistration are frozen; independent replication and scorer runs remain pending. No final ARC conformance claim has been made.
 
-ARC-CEB-1.0 converts residual-issue discovery in the ARC process-control protocol from model-dependent sampling into a **pure, deterministic function** over a frozen typed control record.
+## Start here
 
-It implements the QOFT methodology distinction:
+| Goal | Open |
+|---|---|
+| Understand the protocol | [`docs/ARC-CEB-1.0-SPEC.md`](docs/ARC-CEB-1.0-SPEC.md) |
+| Inspect the preregistered test | [`docs/PREREGISTRATION.md`](docs/PREREGISTRATION.md) |
+| Review all 24 expected cases | [`docs/CASE_MATRIX.md`](docs/CASE_MATRIX.md) |
+| Download the frozen packages | [`v1.0-LOCKED_NOT_EXECUTED`](https://github.com/donaldtuttle/ARC-CEB-1.0/releases/tag/v1.0-LOCKED_NOT_EXECUTED) |
+| Verify the release pins | [`release/HASHES.md`](release/HASHES.md) |
 
-> Auditor recall is a sampler.  
-> Class-exhaustion claims require deterministic enumeration over a declared boundary.
+> **Blind-scoring warning:** `docs/CASE_MATRIX.md` contains expected classifications and reference actions. Do not provide it to blind scorers.
 
-ARC remains a conversation-level process controller. It does not amend QOFT notation or operators.
+## Why ARC-CEB exists
 
----
+A free-form audit is not reproducible. Two evaluators can reread the same answer and notice different problems, or the same evaluator can produce a different list on a second pass.
 
-## Core control path
+ARC-CEB separates **candidate generation** from **candidate scoring**:
 
+| Recall-based audit | ARC-CEB-1.0 |
+|---|---|
+| Rereads prose and notices issues opportunistically | Reads a frozen ARC Control Record |
+| Candidate discovery can vary between runs | R1-R8 triggers are deterministically enumerated |
+| The search boundary is implicit | The dependency boundary is declared and finite |
+| Scoring and discovery can blur together | The `CandidateSet` is frozen and hashed before scoring |
+| Stopping can become open-ended | Output is exactly `NEXT_PROMPT` or `CHAIN_COMPLETE` |
+
+This makes a narrow question testable: **Did identical frozen records produce identical ordered candidate sets, and did independent scorers agree often enough on whether to continue?**
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[Completed answer] --> B[Frozen ARC Control Record]
+    B --> C[Deterministic dependency closure]
+    C --> D[R1-R8 enumeration]
+    D --> E[Frozen CandidateSet plus SHA-256]
+    E --> F[P / M / G scoring]
+    F --> G{Terminal action}
+    G --> H[NEXT_PROMPT]
+    G --> I[CHAIN_COMPLETE]
 ```
-completed answer
-→ frozen ARC Control Record
-→ deterministic dependency closure
-→ deterministic eight-class enumeration (R1–R8)
-→ frozen CandidateSet
-→ Ψmeta scoring with P, M, G
-→ exactly one NEXT_PROMPT or CHAIN_COMPLETE
+
+`Enum_CEB_1` is specified as a pure function:
+
+```text
+identical record bytes + identical generator version
+                         ↓
+identical ordered candidate list + identical candidate-set hash
 ```
 
-`Enum_CEB_1` is a pure function. Identical record bytes + same generator version → identical ordered candidate list and candidate-set hash.
+The generator determines **which candidates exist**. The scorer determines **whether the highest-value unresolved candidate warrants another step**. A scorer may not add an interesting issue that lies outside the frozen boundary.
 
----
+## Status at a glance
+
+| Item | Value |
+|---|---|
+| Protocol | `ARC-CEB-1.0` |
+| Conformance suite | `ARC-CEB-CONF-1.0` |
+| Protocol maturity | `DEVELOP` |
+| Release state | `LOCKED_NOT_EXECUTED` |
+| Static review | `STATIC_PASS` |
+| Replication | `PENDING_REPLICATION` |
+| Independent scorers | `PENDING_SCORERS` |
+| Frozen cases | `24` |
+| Freeze date | `2026-08-22` |
+| Canonical weight | None |
 
 ## The eight residual-defect classes
 
-| Class | Name |
-|-------|------|
-| R1 | Support gap |
-| R2 | Untested assumption |
-| R3 | Undefined operative term |
-| R4 | Alternative or confound gap |
-| R5 | Missing failure / rejection condition |
-| R6 | Scope-bridge gap |
-| R7 | Internal inconsistency |
-| R8 | Operationalization / measurement / realization gap |
+The generator has exactly eight classes. There is no free-form `OTHER` or `MISC` bucket.
 
-No free-form or “OTHER” class exists. Issues outside these classes are recorded as `OUT_OF_BOUNDARY` and cannot affect the current decision.
+| Class | Defect | Operational question |
+|---|---|---|
+| **R1** | Support gap | Is a load-bearing claim unsupported or its evidence unverified? |
+| **R2** | Untested assumption | Does the conclusion depend on an assumption without a valid completed test? |
+| **R3** | Undefined operative term | Is a term doing logical work without a registered definition? |
+| **R4** | Alternative or confound gap | Are alternatives, confounds, or discriminating tests missing or unresolved? |
+| **R5** | Missing failure or rejection condition | Is a required falsifier, failure gate, or rejection rule absent? |
+| **R6** | Scope-bridge gap | Does evidence from one scope support a claim in another without a valid bridge? |
+| **R7** | Internal inconsistency | Does the record contain a cycle, polarity conflict, or incompatible claim? |
+| **R8** | Operationalization, measurement, or realization gap | Is the measurement, proxy, implementation, or realization bridge missing or invalid? |
 
----
+Issues outside R1-R8 are recorded as `OUT_OF_BOUNDARY` and cannot change the current terminal action. The suite tests exhaustiveness over the declared record and classes, not exhaustiveness over reality.
 
-## Conformance Suite (ARC-CEB-CONF-1.0)
+## Frozen 24-case design
 
-Exactly 24 frozen cases:
-
-| Category | Count | Contract |
-|----------|------:|----------|
-| Clean | 2 | Zero candidates |
-| Single-defect (R1–R8) | 16 | Two cases per class, exactly one emitted candidate |
-| Overlapping defects | 3 | Two or more candidates |
+| Category | Count | Frozen contract |
+|---|---:|---|
+| Clean | 2 | Zero emitted candidates |
+| Single-defect R1-R8 | 16 | Two cases per class, exactly one emitted candidate |
+| Overlapping defects | 3 | Two or more emitted candidates |
 | Unique headline-invalidating | 3 | Exactly one candidate whose unresolved defect defeats the headline |
 | **Total** | **24** | Fixed scorer denominator |
 
-### Hard rejection gates (preregistered)
+“Single-defect” means one emitted candidate, not necessarily one trigger code. Multiple trigger codes may collapse into one candidate when they share the same target and class.
 
-- **H1 – Candidate-hash determinism**  
-  Identical frozen records must produce identical candidate-set SHA-256. Requires the reference implementation + at least one independently written enumerator.
+## Preregistered hard rejection gates
 
-- **H2 – Fatal-defect class coverage**  
-  Reject if a confirmed unique headline-invalidating defect cannot be represented by R1–R8.
+| Gate | Reject ARC-CEB-1.0 when... |
+|---|---|
+| **H1 - Candidate-hash determinism** | Identical frozen records produce different candidate-set hashes, or independent conforming implementations diverge. |
+| **H2 - Fatal-defect class coverage** | A confirmed unique headline-invalidating defect cannot be represented by R1-R8. |
+| **H3 - Terminal-action agreement** | At least three isolated scorers disagree on `NEXT_PROMPT` versus `CHAIN_COMPLETE` in 3 or more of the 24 cases. |
 
-- **H3 – Independent terminal-action agreement**  
-  At least three isolated scorers. Reject if terminal actions (NEXT_PROMPT vs CHAIN_COMPLETE) disagree on ≥ 3 of the 24 cases (>10%).
+Selected-candidate agreement, exact P/M/G agreement, false-continuation rate, false-stop rate, and related measures are diagnostics. They are not additional hard gates in version 1.0.
 
-### Current execution status
+## Download the locked release
 
-```
-STATIC_PASS
-PENDING_REPLICATION
-PENDING_SCORERS
-```
+The executable and blind-scoring materials live in the GitHub Release rather than on the `main` branch.
 
-No final ARC conformance claim has been made.
+| Asset | Purpose | SHA-256 |
+|---|---|---|
+| [`ARC_CEB_1_0_CONFORMANCE_SUITE.zip`](https://github.com/donaldtuttle/ARC-CEB-1.0/releases/download/v1.0-LOCKED_NOT_EXECUTED/ARC_CEB_1_0_CONFORMANCE_SUITE.zip) | Frozen conformance suite and audit materials | `dc3fd6d09bbebd344e48fffe92a1dec128622b1f5daa10ffacbb9c11b34ac800` |
+| [`ARC_CEB_1_0_SCORER_PACKET.zip`](https://github.com/donaldtuttle/ARC-CEB-1.0/releases/download/v1.0-LOCKED_NOT_EXECUTED/ARC_CEB_1_0_SCORER_PACKET.zip) | Blind packet for isolated scorers | `51ef04911c9fd89bd68dffaacccecd8a4b8af35989fb5a516b60e30c78c7fba7` |
 
----
+Internal lock-file pin:
 
-## Release hashes (locked)
-
-```
-ARC_CEB_1_0_CONFORMANCE_SUITE.zip
-SHA-256: dc3fd6d09bbebd344e48fffe92a1dec128622b1f5daa10ffacbb9c11b34ac800
-
-ARC_CEB_1_0_SCORER_PACKET.zip
-SHA-256: 51ef04911c9fd89bd68dffaacccecd8a4b8af35989fb5a516b60e30c78c7fba7
-
+```text
 LOCK.json
 SHA-256: 68c1e5cc3c848c980381d45dc9216430a0bebdae0d95c4188bcb62a25e8b355c
 ```
 
-The binary packages should be attached as GitHub Release assets. This repository holds the locked textual specification, preregistration, case matrix, and supporting documentation.
+Verify the downloaded ZIP files before opening or distributing them:
 
----
+```bash
+# macOS
+shasum -a 256 ARC_CEB_1_0_CONFORMANCE_SUITE.zip
+shasum -a 256 ARC_CEB_1_0_SCORER_PACKET.zip
+
+# Linux
+sha256sum ARC_CEB_1_0_CONFORMANCE_SUITE.zip
+sha256sum ARC_CEB_1_0_SCORER_PACKET.zip
+```
+
+```powershell
+# Windows PowerShell
+Get-FileHash .\ARC_CEB_1_0_CONFORMANCE_SUITE.zip -Algorithm SHA256
+Get-FileHash .\ARC_CEB_1_0_SCORER_PACKET.zip -Algorithm SHA256
+```
+
+## Execution path
+
+1. Download both release assets and verify their SHA-256 hashes.
+2. Keep the scorer packet isolated from the case matrix, expected outputs, and implementation materials.
+3. Run the frozen records through the reference enumerator and at least one independently written conforming enumerator.
+4. Confirm byte-identical ordered candidate sets and candidate-set hashes.
+5. Give the blind packet to at least three isolated scorers.
+6. Apply H1-H3 exactly as preregistered, without moving thresholds after observing results.
+7. Publish the full result record, including failures and non-rejection diagnostics.
 
 ## Claim boundary
 
-A future `FINAL_PASS` supports only this claim:
+A future `FINAL_PASS` would support only this narrow claim:
 
-> ARC-CEB-1.0 deterministically enumerated the declared R1–R8 defects on the frozen 24-case suite, and independent scorers exceeded the preregistered terminal-action agreement threshold.
+> ARC-CEB-1.0 deterministically enumerated the declared R1-R8 defects on the frozen 24-case suite, and independent scorers exceeded the preregistered terminal-action agreement threshold.
 
-It does **not** establish:
+It would **not** establish that:
 
-- that R1–R8 exhaust every possible reasoning defect
-- that ARC improves task outcomes
-- that P/M/G scores are universally calibrated
-- that internal model reasoning changed
-- that the protocol generalizes beyond the tested fixtures
+- R1-R8 exhaust every possible reasoning defect
+- ARC improves task outcomes
+- P/M/G scores are universally calibrated
+- internal model reasoning changed
+- the protocol generalizes beyond the frozen fixtures
+- QOFT canon, physical claims, or unrelated theoretical claims are validated
 
----
+## Repository map
 
-## Directory layout
+| Path | Purpose |
+|---|---|
+| [`README.md`](README.md) | Plain-language front door, status, downloads, and execution path |
+| [`docs/ARC-CEB-1.0-SPEC.md`](docs/ARC-CEB-1.0-SPEC.md) | Protocol specification and deterministic boundary |
+| [`docs/PREREGISTRATION.md`](docs/PREREGISTRATION.md) | Frozen suite design, gates, and claim boundary |
+| [`docs/CASE_MATRIX.md`](docs/CASE_MATRIX.md) | Expected category, trigger coverage, candidate count, and terminal action for all 24 cases |
+| [`release/HASHES.md`](release/HASHES.md) | SHA-256 pins for the two ZIP packages and `LOCK.json` |
+| [`LICENSE`](LICENSE) | MIT License |
+| [GitHub Release](https://github.com/donaldtuttle/ARC-CEB-1.0/releases/tag/v1.0-LOCKED_NOT_EXECUTED) | Frozen binary packages under tag `v1.0-LOCKED_NOT_EXECUTED` |
 
-```
-docs/           Protocol specification and preregistration
-cases/          (placeholder for the 24 frozen case files)
-keys/           Expected candidates, trigger coverage, reference scores
-src/            Reference enumerator and validator (to be added)
-scorer/         Blind packet materials and ballot templates
-release/        Hash pins and lock metadata
-```
+## Freeze and versioning
 
----
+Treat the tagged release, its assets, and its published hashes as the frozen ARC-CEB-1.0 object. Main-branch editorial improvements do not alter those tagged bytes. Any future change to the protocol, fixtures, scorer anchors, thresholds, expected outputs, generator, or validator requires a new version, new lock record, and new hashes.
+
+## QOFT relationship
+
+ARC-CEB-1.0 uses the QOFT methodology distinction between sampler-based recall and deterministic enumeration over a declared boundary. It is classified as a **QOFT Typed Realization candidate** with **canonical weight: none**.
+
+It does not amend QOFT notation, operators, or canon. That relationship describes methodological provenance only.
 
 ## License
 
-This experimental protocol and conformance suite are released for research and replication.  
-No warranty of fitness for any particular purpose.
-
----
-
-## Next required step
-
-Give the blind scorer packet to at least three isolated scorers and the rule specification to one independently implementing auditor, then run the strict validator unchanged.
-
-Reject ARC-CEB-1.0 if:
-
-- any candidate hash diverges, or
-- any adjudicated unique fatal defect lies outside R1–R8, or
-- terminal actions disagree on three or more cases.
+ARC-CEB-1.0 is released under the [MIT License](LICENSE). The software and documentation are provided without warranty.
