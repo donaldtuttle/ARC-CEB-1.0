@@ -11,6 +11,28 @@ ARC-CEB-1.0 is a deterministic conformance protocol for deciding whether an ARC-
 
 The current release is **locked but not executed**. The packages and preregistration are frozen; independent replication and scorer runs remain pending. No final ARC conformance claim has been made.
 
+## What is this?
+
+A frozen protocol for listing a defined set of reasoning defects from a
+structured record before deciding whether another prompt is worthwhile.
+
+## Why care?
+
+Two reviewers can disagree because they noticed different issues, even before
+they disagree about severity. This protocol separates those problems: first
+fix the candidate list, then compare judgments about it. Its release remains
+locked but not executed; reproducibility and scorer agreement are questions
+for the registered evaluation.
+
+## Try this
+
+Read the [eight defect classes](#the-eight-residual-defect-classes), then the
+[protocol specification](docs/ARC-CEB-1.0-SPEC.md). As a reading exercise, ask
+where an undefined term in a headline claim belongs and what record fields
+the enumerator requires. This is an orientation exercise, not a scored trial.
+Keep expected case answers away from anyone assigned to blind scoring.
+
+
 ## Start here
 
 | Goal | Open |
