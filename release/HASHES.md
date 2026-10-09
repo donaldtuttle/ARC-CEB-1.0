@@ -12,4 +12,4 @@ SHA-256: 68c1e5cc3c848c980381d45dc9216430a0bebdae0d95c4188bcb62a25e8b355c
 ```
 
 These hashes pin the binary packages and the lock file.  
-Upload the corresponding ZIP files as GitHub Release assets under tag `v1.0-LOCKED_NOT_EXECUTED`.
+The corresponding ZIP files are available as GitHub Release assets under tag `v1.0-LOCKED_NOT_EXECUTED`.
